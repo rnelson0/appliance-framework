@@ -34,9 +34,6 @@ Function New-vRealizeLogInsightAppliance {
 		.Parameter Name
 			Specifies a name for the imported appliance.
 
-		.Parameter RootPassword
-			A root password can be set if desired and will override any already set password. If not, but guest customization is running, then it will be randomly generated. Otherwise the password will be blank, and will be required to change in the console before using SSH. For security reasons, it is recommended to use a password that is a minimum of eight characters and contains a minimum of one upper, one lower, one digit, and one special character.
-
 		.Parameter SSHKey
 			An SSH Public Key can be set if desired, disabling password authentication. If blank during initial deployment, SSH will be configured per the Root Password option above. Entering a new SSH Public Key will append to (not override) the already configured Public Key(s).
 
@@ -172,11 +169,6 @@ Function New-vRealizeLogInsightAppliance {
 		[ValidateNotNullOrEmpty()]
 		[String]$Name,
 
-		[Parameter(Mandatory=$true,ParameterSetName="Static")]
-		[Parameter(Mandatory=$true,ParameterSetName="DHCP")]
-		[ValidateNotNullOrEmpty()]
-		[String]$RootPassword,
-		
 		[Parameter(ParameterSetName="DHCP")]
 		[String]$SSHKey,
 
@@ -272,7 +264,6 @@ Function New-vRealizeLogInsightAppliance {
 			# Setting Basics Up
 			Write-Progress -Activity $Activity -Status $Status -CurrentOperation "Configuring Basic Values"
 			$ovfconfig.DeploymentOption.Value = $DeploymentSize.toLower(); # Value for the deployment size
-			if ($RootPassword) { $ovfconfig.vm.rootpw.value = $RootPassword } # Setting the provided password for the root account
 			if ($SSHKey) { $ovfconfig.vm.sshkey.value = $SSHKey } # Setting the provided SSH Public Key			
 
 			# Setting Networking Values
@@ -284,7 +275,6 @@ Function New-vRealizeLogInsightAppliance {
 				$ovfconfig.vami.$ApplianceType.ip0.value = $IPAddress
 				$ovfconfig.vami.$ApplianceType.netmask0.value = $SubnetMask
 				$ovfconfig.vami.$ApplianceType.gateway.value = $Gateway
-				$ovfconfig.vami.$ApplianceType.hostname.value = $FQDN
 				$ovfconfig.vami.$ApplianceType.DNS.value = $DnsServers -join ","
 				if ($DnsSearchPath) { $ovfconfig.vami.$ApplianceType.searchpath.value = $DnsSearchPath -join "," }
 				if ($Domain) { $ovfconfig.vami.$ApplianceType.domain.value = $Domain }
